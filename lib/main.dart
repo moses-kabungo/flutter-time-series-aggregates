@@ -30,37 +30,107 @@ class StatisticsWidget extends StatefulWidget {
   _InternalState createState() => _InternalState();
 }
 
+enum _ChartScope {
+  DAILY,
+  WEEKLY,
+  MONTHLY,
+  ANUAL
+}
+
 class _InternalState extends State<StatisticsWidget> {
   @Todo('kbngmoses',
-    'use appropiate lifecycle method to fetch data from an external source')
+    'use the initState() method to fetch data from an external source')
   _InternalState() : this._data = Fixtures.data;
+
+  // @Todo('kbngmoses', 'Uncomment the following code')
+  // @override
+  // initState() {
+  //   super.initState();
+  //   // logic to load data from the server.
+  // }
 
   // library private data
   final List<CultivationDataEntry> _data;
 
+  // chart scope default is Daily
+  _ChartScope _scope = _ChartScope.DAILY;
+
+  _setChartScope(_ChartScope scope) {
+    return () { // update widget tree
+      if (scope == _scope)
+        return;
+      setState(() {
+        _scope = scope;
+      });
+    };
+  }
+
+  // a widget to show trends
+  Widget _getChartWidget() {
+    switch(_scope) {
+      case _ChartScope.WEEKLY:
+        return WeeklyTrendsWidget(_data);
+      case _ChartScope.MONTHLY:
+        return MonthlyTrendsWidget(_data);
+      case _ChartScope.ANUAL:
+        return AnualTrendsWidget(_data);
+      default:
+        return DailyTrendsWidget(_data);
+    }
+  }
+
+  // button bar control buttons
+  Widget _getControlsWidget() =>
+    SizedBox(
+      height: 100.0,
+      child: ListView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.all(32.0),
+      children: <Widget>[
+        FlatButton (
+          child: Text("Daily"),
+          onPressed: _setChartScope(_ChartScope.DAILY),
+        ),
+        FlatButton(
+          child: Text("Weekly"),
+          onPressed: _setChartScope(_ChartScope.WEEKLY)
+        ),
+        FlatButton(
+          child: Text("Monthly"),
+          onPressed: _setChartScope(_ChartScope.MONTHLY),
+        ),
+        FlatButton(
+          child: Text(
+            "Annually",
+            style: TextStyle(
+              decoration: _scope == _ChartScope.ANUAL ?
+                TextDecoration.underline:
+                TextDecoration.none)),
+          onPressed: _setChartScope(_ChartScope.ANUAL)
+        )
+    ])
+    );
+
   // build the widget
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-        length: 4,
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text("Chart Sample"),
-            bottom: TabBar(tabs: [
-              Tab(text: 'Daily'),
-              Tab(text: 'Weekly'),
-              Tab(text: 'Monthly'),
-              Tab(text: 'Annually')
-            ]),
-          ),
-          body: TabBarView(children: [
-            DailyTrendsWidget(_data),
-            WeeklyTrendsWidget(_data),
-            MonthlyTrendsWidget(_data),
-            AnualTrendsWidget(_data)
-          ]),
-        ));
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Chart Sample")
+      ),
+        
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _getChartWidget(),
+            _getControlsWidget()
+          ]
+        )
+      )
+    );
   }
+
 }
 
 // widget to display daily trends
@@ -101,10 +171,10 @@ class AnualTrendsWidget extends StatefulWidget {
 }
 
 abstract class AbstractTSChartState<T extends StatefulWidget> extends State<T> {
-  final List<CultivationDataEntry> data;
-  final String caption;
+  final List<CultivationDataEntry> _data;
+  final String _caption;
 
-  AbstractTSChartState(this.data, this.caption);
+  AbstractTSChartState(this._data, this._caption);
 
   aggregate(List<CultivationDataEntry> data);
 
@@ -121,7 +191,7 @@ abstract class AbstractTSChartState<T extends StatefulWidget> extends State<T> {
   }
 
   createChartWidget() {
-    var chart = charts.TimeSeriesChart(getSeries(data),
+    var chart = charts.TimeSeriesChart(getSeries(_data),
         animate: true,
         customSeriesRenderers: [
           charts.LineRendererConfig(
@@ -145,7 +215,7 @@ abstract class AbstractTSChartState<T extends StatefulWidget> extends State<T> {
     return Center(
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[createChartWidget(), Text('Daily Trends')]));
+            children: <Widget>[Text(_caption), createChartWidget(),]));
   }
 }
 
@@ -156,6 +226,7 @@ class DailyTrendsState extends AbstractTSChartState<DailyTrendsWidget> {
 
   @override
   aggregate(List<CultivationDataEntry> data) {
+    CultivationDatasetUtils.sortByDateAsc(data);
     return data;
   }
 }
@@ -167,6 +238,7 @@ class WeeklyTrendsState extends AbstractTSChartState<WeeklyTrendsWidget> {
 
   @override
   aggregate(List<CultivationDataEntry> data) {
+    CultivationDatasetUtils.sortByDateAsc(data);
     // generate dates starting from the first date of the year
     var firstThursday = DateTime.utc(2018, DateTime.january, 1);
 
@@ -222,7 +294,8 @@ class MonthlyTrendsState extends AbstractTSChartState<MonthlyTrendsWidget> {
 
   @override
   aggregate(List<CultivationDataEntry> data) {
-    // aggregate data by months for the year
+    CultivationDatasetUtils.sortByDateAsc(data);
+    // aggregate data by months of the year
     List<CultivationDataEntry> acc = List.generate(12, (int index) {
       return CultivationDataEntry.onDateOf(
           DateTime(2018, DateTime.january + index, 1))
