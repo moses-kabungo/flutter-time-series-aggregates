@@ -187,7 +187,7 @@ class WeeklyTrendsState extends
       firstThursday = DateTime.utc(2018, DateTime.january, 1 + ((4 - firstThursday.weekday) + 7) % 7);
     }
 
-    getWeekForNumberForDate(DateTime date) {
+    getWeekNumberForDate(DateTime date) {
       int today = date.weekday;
       // ISO weekdays starts on monday so correct the day number
       var dayNr = (today + 6) % 7;
@@ -210,7 +210,7 @@ class WeeklyTrendsState extends
 
     data.forEach((el) {
       // retrieve corresponding week item
-      int index = getWeekForNumberForDate(el.timestamp);
+      int index = getWeekNumberForDate(el.timestamp);
       if (index > 51) {
         return;
       }
@@ -218,7 +218,7 @@ class WeeklyTrendsState extends
     });
 
     // aggregate data into weeks
-    print(getWeekForNumberForDate(acc.last.timestamp));
+    print(getWeekNumberForDate(acc.last.timestamp));
 
     return acc;
   }
