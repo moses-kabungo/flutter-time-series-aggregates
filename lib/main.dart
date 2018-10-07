@@ -4,10 +4,10 @@ import 'package:flutter_101/models/cultivation-data-entry.dart';
 import 'package:flutter_101/util/Fixtures.dart';
 import 'package:flutter_101/util/cultivation-dataset-utils.dart';
 
-void main() => runApp(AreaAndLineChart());
+void main() => runApp(AppHomePage());
 
-class AreaAndLineChart extends StatelessWidget {
-  AreaAndLineChart();
+class AppHomePage extends StatelessWidget {
+  AppHomePage();
 
   @override
   Widget build(BuildContext context) {
