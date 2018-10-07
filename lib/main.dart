@@ -2,6 +2,7 @@ import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 import 'package:flutter_101/models/cultivation-data-entry.dart';
 import 'package:flutter_101/util/Fixtures.dart';
+import 'package:flutter_101/util/cultivation-dataset-utils.dart';
 
 void main() => runApp(AreaAndLineChart());
 
@@ -29,10 +30,9 @@ class SamplePage extends StatefulWidget {
 }
 
 class _InternalState extends State<SamplePage> {
-
   /* todo: use appropiate lifecycle method to fetch data from
     an external source*/
-  _InternalState(): this._data = Fixtures.data;
+  _InternalState() : this._data = Fixtures.data;
 
   // library private data
   final List<CultivationDataEntry> _data;
@@ -40,11 +40,9 @@ class _InternalState extends State<SamplePage> {
   // build the widget
   @override
   Widget build(BuildContext context) {
-    
     return DefaultTabController(
         length: 4,
         child: Scaffold(
-          
           appBar: AppBar(
             title: Text("Chart Sample"),
             bottom: TabBar(tabs: [
@@ -54,22 +52,18 @@ class _InternalState extends State<SamplePage> {
               Tab(text: 'Annually')
             ]),
           ),
-
-          body: TabBarView(
-            children: [
-              DailyTrendsWidget(_data),
-              WeeklyTrendsWidget(_data),
-              MonthlyTrendsWidget(_data),
-              AnualTrendsWidget(_data)
-            ]
-          ),
+          body: TabBarView(children: [
+            DailyTrendsWidget(_data),
+            WeeklyTrendsWidget(_data),
+            MonthlyTrendsWidget(_data),
+            AnualTrendsWidget(_data)
+          ]),
         ));
   }
 }
 
 // widget to display daily trends
 class DailyTrendsWidget extends StatefulWidget {
-
   final List<CultivationDataEntry> data;
 
   DailyTrendsWidget(this.data);
@@ -106,7 +100,6 @@ class AnualTrendsWidget extends StatefulWidget {
 }
 
 abstract class AbstractTSChartState<T extends StatefulWidget> extends State<T> {
-
   final List<CultivationDataEntry> data;
   final String caption;
 
@@ -114,56 +107,51 @@ abstract class AbstractTSChartState<T extends StatefulWidget> extends State<T> {
 
   aggregate(List<CultivationDataEntry> data);
 
-  getSeries(List<CultivationDataEntry> trends)  {
+  getSeries(List<CultivationDataEntry> trends) {
     return [
-       charts.Series<CultivationDataEntry, DateTime>(
-        domainFn: (CultivationDataEntry d, _) => d.timestamp,
-        measureFn: (CultivationDataEntry d, _) => d.tones,
-        colorFn: (_, __) => charts.MaterialPalette.green.shadeDefault,
-        id: 'Cultivations',
-        data: aggregate(trends))
-      ..setAttribute(charts.rendererIdKey, 'customArea'),
+      charts.Series<CultivationDataEntry, DateTime>(
+          domainFn: (CultivationDataEntry d, _) => d.timestamp,
+          measureFn: (CultivationDataEntry d, _) => d.tones,
+          colorFn: (_, __) => charts.MaterialPalette.green.shadeDefault,
+          id: 'Cultivations',
+          data: aggregate(trends))
+        ..setAttribute(charts.rendererIdKey, 'customArea'),
     ];
   }
 
   createChartWidget() {
-    var chart =  charts.TimeSeriesChart(getSeries(data),
-      animate: true,
-      customSeriesRenderers: [
-         charts.LineRendererConfig(
-          // ID used to link series to this renderer.
-          customRendererId: 'customArea',
-          includeArea: true,
-          stacked: true),
-    ]);
+    var chart = charts.TimeSeriesChart(getSeries(data),
+        animate: true,
+        customSeriesRenderers: [
+          charts.LineRendererConfig(
+              // ID used to link series to this renderer.
+              customRendererId: 'customArea',
+              includeArea: true,
+              stacked: true),
+        ]);
 
     return Padding(
-      padding:  EdgeInsets.all(32.0),
-      child:  SizedBox(
+      padding: EdgeInsets.all(32.0),
+      child: SizedBox(
         height: 200.0,
         child: chart,
       ),
     );
   }
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-          createChartWidget(),
-          Text('Daily Trends')
-      ]));
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[createChartWidget(), Text('Daily Trends')]));
   }
 }
 
 // construct daily trends from time series
-class DailyTrendsState extends
-  AbstractTSChartState<DailyTrendsWidget> {
-
-  DailyTrendsState(
-    List<CultivationDataEntry> data): super(data, "Daily Trends");
+class DailyTrendsState extends AbstractTSChartState<DailyTrendsWidget> {
+  DailyTrendsState(List<CultivationDataEntry> data)
+      : super(data, "Daily Trends");
 
   @override
   aggregate(List<CultivationDataEntry> data) {
@@ -172,19 +160,18 @@ class DailyTrendsState extends
 }
 
 // construct weekly trends from timeseries (throughout the year)
-class WeeklyTrendsState extends
-  AbstractTSChartState<WeeklyTrendsWidget> {
-
-  WeeklyTrendsState(List<CultivationDataEntry> data): super(data = data, "Weekly Trends");
+class WeeklyTrendsState extends AbstractTSChartState<WeeklyTrendsWidget> {
+  WeeklyTrendsState(List<CultivationDataEntry> data)
+      : super(data = data, "Weekly Trends");
 
   @override
   aggregate(List<CultivationDataEntry> data) {
-    
     // generate dates starting from the first date of the year
     var firstThursday = DateTime.utc(2018, DateTime.january, 1);
 
     if (firstThursday.weekday != DateTime.thursday) {
-      firstThursday = DateTime.utc(2018, DateTime.january, 1 + ((4 - firstThursday.weekday) + 7) % 7);
+      firstThursday = DateTime.utc(
+          2018, DateTime.january, 1 + ((4 - firstThursday.weekday) + 7) % 7);
     }
 
     getWeekNumberForDate(DateTime date) {
@@ -200,13 +187,14 @@ class WeeklyTrendsState extends
 
       // the week number is the number of weeks between the
       // first thursday of the year and the target thursday in the week
-      var x = targetThursday.millisecondsSinceEpoch - firstThursday.millisecondsSinceEpoch;
+      var x = targetThursday.millisecondsSinceEpoch -
+          firstThursday.millisecondsSinceEpoch;
       return x.ceil() ~/ 604800000;
     }
 
     List<CultivationDataEntry> acc = List.generate(52, (int index) {
-      return CultivationDataEntry
-        .onDateOf(firstThursday.add(Duration(days: index * 7)))
+      return CultivationDataEntry.onDateOf(
+          firstThursday.add(Duration(days: index * 7)))
         ..tones = 0;
     });
 
@@ -224,52 +212,56 @@ class WeeklyTrendsState extends
 
     return acc;
   }
-
 }
 
 // monthly trends state
-class MonthlyTrendsState extends
-  AbstractTSChartState<MonthlyTrendsWidget> {
-
-  MonthlyTrendsState(List<CultivationDataEntry> data): super(data, "Monthly Trends");
+class MonthlyTrendsState extends AbstractTSChartState<MonthlyTrendsWidget> {
+  MonthlyTrendsState(List<CultivationDataEntry> data)
+      : super(data, "Monthly Trends");
 
   @override
   aggregate(List<CultivationDataEntry> data) {
     // aggregate data by months for the year
     List<CultivationDataEntry> acc = List.generate(12, (int index) {
-      return CultivationDataEntry
-        .onDateOf(DateTime(2018, DateTime.january + index, 1))
+      return CultivationDataEntry.onDateOf(
+          DateTime(2018, DateTime.january + index, 1))
         ..tones = 0;
     });
 
     // iterate data and accumulate by similar month
-    data.forEach((point) =>
-      acc[point.timestamp.month - 1] + point.tones);
+    data.forEach((point) => acc[point.timestamp.month - 1] + point.tones);
 
     return acc;
   }
-
 }
 
-class AnualTrendsState extends
-  AbstractTSChartState<AnualTrendsWidget> {
-
-  AnualTrendsState(List<CultivationDataEntry> data): super(data, "Anual Trends");
+class AnualTrendsState extends AbstractTSChartState<AnualTrendsWidget> {
+  AnualTrendsState(List<CultivationDataEntry> data)
+      : super(data, "Anual Trends");
 
   @override
   aggregate(List<CultivationDataEntry> data) {
+    // find the minimum year in the dataset
+    CultivationDatasetUtils.sortByDateAsc(data);
+
+    var yearOne = data.first.timestamp.year;
+    var finalYear = data.last.timestamp.year;
 
     // aggregate for the same year
     List<CultivationDataEntry> acc =
-      List.generate(2, (int index) {
-        return CultivationDataEntry
-          .onDateOf(DateTime.utc(2018 + index, DateTime.january, 1))
-          ..tones = 0;
-      });
+        List.generate(finalYear - yearOne + 1, (int index) {
+      return CultivationDataEntry.onDateOf(
+          DateTime.utc(yearOne + index, DateTime.january, 1))
+        ..tones = 0;
+    });
 
-    // aggregate data between the two years
+    // aggregate data by years
     data.forEach((e) {
-      acc[e.timestamp.year == 2018 ? 0 : 1].tones += e.tones;
+      int index = acc.map(
+        (entry) => entry.timestamp.year).toList().indexOf(e.timestamp.year);
+
+      // perform commulative summation
+      acc[index] += e.tones;
     });
 
     return acc;
