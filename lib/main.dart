@@ -206,7 +206,8 @@ class WeeklyTrendsState extends
 
     List<CultivationDataEntry> acc = List.generate(52, (int index) {
       return CultivationDataEntry
-        .entryAt(firstThursday.add(Duration(days: index * 7)));
+        .onDateOf(firstThursday.add(Duration(days: index * 7)))
+        ..tones = 0;
     });
 
     data.forEach((CultivationDataEntry el) {
@@ -236,9 +237,9 @@ class MonthlyTrendsState extends
   aggregate(List<CultivationDataEntry> data) {
     // aggregate data by months for the year
     List<CultivationDataEntry> acc = List.generate(12, (int index) {
-      print(index);
-      return CultivationDataEntry(
-        DateTime(2018, DateTime.january + index, 1), 0);
+      return CultivationDataEntry
+        .onDateOf(DateTime(2018, DateTime.january + index, 1))
+        ..tones = 0;
     });
 
     // iterate data and accumulate by similar month
@@ -261,7 +262,9 @@ class AnualTrendsState extends
     // aggregate for the same year
     List<CultivationDataEntry> acc =
       List.generate(2, (int index) {
-        return CultivationDataEntry(DateTime.utc(2018 + index, DateTime.january, 1), 0);
+        return CultivationDataEntry
+          .onDateOf(DateTime.utc(2018 + index, DateTime.january, 1))
+          ..tones = 0;
       });
 
     // aggregate data between the two years

@@ -2,14 +2,13 @@
 class CultivationDataEntry {
 
   final DateTime timestamp;
-  int tones;
+  int tones = 0;
 
   // constructor
   CultivationDataEntry(this.timestamp, this.tones);
 
   // named constructor
-  CultivationDataEntry.on(this.timestamp, { int tones = 0 }):
-    this.tones = tones;
+  CultivationDataEntry.onDateOf(this.timestamp);
 
   // overload the addition operator
   CultivationDataEntry operator+ (int tones) {
