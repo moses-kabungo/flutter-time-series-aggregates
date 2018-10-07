@@ -112,7 +112,7 @@ abstract class AbstractTSChartState<T extends StatefulWidget> extends State<T> {
 
   AbstractTSChartState(this.data, this.caption);
 
-  categorize(List<CultivationDataSeries> data);
+  aggregate(List<CultivationDataSeries> data);
 
   getSeries(List<CultivationDataSeries> trends)  {
     return [
@@ -121,7 +121,7 @@ abstract class AbstractTSChartState<T extends StatefulWidget> extends State<T> {
         measureFn: (CultivationDataSeries d, _) => d.tones,
         colorFn: (_, __) => charts.MaterialPalette.green.shadeDefault,
         id: 'Cultivations',
-        data: categorize(trends))
+        data: aggregate(trends))
       ..setAttribute(charts.rendererIdKey, 'customArea'),
     ];
   }
@@ -166,7 +166,7 @@ class DailyTrendsState extends
     List<CultivationDataSeries> data): super(data, "Daily Trends");
 
   @override
-  categorize(List<CultivationDataSeries> data) {
+  aggregate(List<CultivationDataSeries> data) {
     return data;
   }
 }
@@ -178,7 +178,7 @@ class WeeklyTrendsState extends
   WeeklyTrendsState(List<CultivationDataSeries> data): super(data = data, "Weekly Trends");
 
   @override
-  categorize(List<CultivationDataSeries> data) {
+  aggregate(List<CultivationDataSeries> data) {
     
     // generate dates starting from the first date of the year
     var firstThursday = DateTime.utc(2018, DateTime.january, 1);
@@ -208,17 +208,17 @@ class WeeklyTrendsState extends
       return CultivationDataSeries(firstThursday.add(Duration(days: index * 7)), 0);
     });
 
-    data.forEach((el) {
+    data.forEach((CultivationDataSeries el) {
       // retrieve corresponding week item
       int index = getWeekNumberForDate(el.timestamp);
       if (index > 51) {
         return;
       }
-      acc[index].tones += el.tones;
+      acc[index] += el.tones;
     });
 
     // aggregate data into weeks
-    print(getWeekNumberForDate(acc.last.timestamp));
+    // print(getWeekNumberForDate(acc.last.timestamp));
 
     return acc;
   }
@@ -232,7 +232,7 @@ class MonthlyTrendsState extends
   MonthlyTrendsState(List<CultivationDataSeries> data): super(data, "Monthly Trends");
 
   @override
-  categorize(List<CultivationDataSeries> data) {
+  aggregate(List<CultivationDataSeries> data) {
     // aggregate data by months for the year
     List<CultivationDataSeries> acc = List.generate(12, (int index) {
       print(index);
@@ -255,7 +255,7 @@ class AnualTrendsState extends
   AnualTrendsState(List<CultivationDataSeries> data): super(data, "Anual Trends");
 
   @override
-  categorize(List<CultivationDataSeries> data) {
+  aggregate(List<CultivationDataSeries> data) {
 
     // aggregate for the same year
     List<CultivationDataSeries> acc =
