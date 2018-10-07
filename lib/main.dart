@@ -16,20 +16,20 @@ class AreaAndLineChart extends StatelessWidget {
             brightness: Brightness.dark,
             primaryColor: Colors.amber[700],
             accentColor: Colors.lightGreenAccent[200]),
-        home: SamplePage());
+        home: StatisticsWidget());
   }
 }
 
-class SamplePage extends StatefulWidget {
+class StatisticsWidget extends StatefulWidget {
   final String title;
 
-  SamplePage({Key key, this.title}) : super(key: key);
+  StatisticsWidget({Key key, this.title}) : super(key: key);
 
   @override
   _InternalState createState() => _InternalState();
 }
 
-class _InternalState extends State<SamplePage> {
+class _InternalState extends State<StatisticsWidget> {
   /* todo: use appropiate lifecycle method to fetch data from
     an external source*/
   _InternalState() : this._data = Fixtures.data;
