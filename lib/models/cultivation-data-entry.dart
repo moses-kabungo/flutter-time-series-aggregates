@@ -1,24 +1,24 @@
 
-class CultivationDataSeries {
+class CultivationDataEntry {
 
   final DateTime timestamp;
   int tones;
 
   // constructor
-  CultivationDataSeries(this.timestamp, this.tones);
+  CultivationDataEntry(this.timestamp, this.tones);
 
   // named constructor
-  CultivationDataSeries.entryAt(this.timestamp, { int tones = 0 }):
+  CultivationDataEntry.entryAt(this.timestamp, { int tones = 0 }):
     this.tones = tones;
 
   // overload the addition operator
-  CultivationDataSeries operator+ (int tones) {
+  CultivationDataEntry operator+ (int tones) {
     this.tones += tones;
     return this;
   }
 
   // overload the substraction operator
-  CultivationDataSeries operator- (int tones) {
+  CultivationDataEntry operator- (int tones) {
     this.tones -= tones;
     return this;
   }
