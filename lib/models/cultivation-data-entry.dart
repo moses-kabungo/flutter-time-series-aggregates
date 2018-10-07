@@ -8,7 +8,7 @@ class CultivationDataEntry {
   CultivationDataEntry(this.timestamp, this.tones);
 
   // named constructor
-  CultivationDataEntry.entryAt(this.timestamp, { int tones = 0 }):
+  CultivationDataEntry.on(this.timestamp, { int tones = 0 }):
     this.tones = tones;
 
   // overload the addition operator

@@ -205,7 +205,8 @@ class WeeklyTrendsState extends
     }
 
     List<CultivationDataEntry> acc = List.generate(52, (int index) {
-      return CultivationDataEntry(firstThursday.add(Duration(days: index * 7)), 0);
+      return CultivationDataEntry
+        .entryAt(firstThursday.add(Duration(days: index * 7)));
     });
 
     data.forEach((CultivationDataEntry el) {
