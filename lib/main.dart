@@ -1,5 +1,7 @@
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
+import 'package:flutter_101/models/cultivation-data-series.dart';
+import 'package:flutter_101/util/Fixtures.dart';
 
 void main() => runApp(AreaAndLineChart());
 
@@ -12,16 +14,9 @@ class AreaAndLineChart extends StatelessWidget {
         theme: ThemeData(
             brightness: Brightness.dark,
             primaryColor: Colors.amber[700],
-            accentColor: Colors.lightBlueAccent[200]),
+            accentColor: Colors.lightGreenAccent[200]),
         home: SamplePage());
   }
-}
-
-class CultivationDataSeries {
-  final DateTime timestamp;
-  int tones;
-
-  CultivationDataSeries(this.timestamp, this.tones);
 }
 
 class SamplePage extends StatefulWidget {
@@ -34,43 +29,22 @@ class SamplePage extends StatefulWidget {
 }
 
 class _InternalState extends State<SamplePage> {
-  _InternalState();
 
-  var _captionIndex = 0;
+  /* todo: use appropiate lifecycle method to fetch data from
+    an external source*/
+  _InternalState(): this._data = Fixtures.data;
 
-  static final _data = [
-    new CultivationDataSeries(DateTime.utc(2018, 9, 1), -12),
-    new CultivationDataSeries(DateTime.utc(2018, 9, 2), 42),
-    new CultivationDataSeries(DateTime.utc(2018, 9, 3), 23),
-    new CultivationDataSeries(DateTime.utc(2018, 9, 4), -1),
-    new CultivationDataSeries(DateTime.utc(2018, 9, 5), 0),
-    new CultivationDataSeries(DateTime.utc(2018, 9, 6), 0),
-    new CultivationDataSeries(DateTime.utc(2018, 9, 7), 2),
-    new CultivationDataSeries(DateTime.utc(2018, 9, 15), -12),
-    new CultivationDataSeries(DateTime.utc(2018, 9, 23), 14),
-    new CultivationDataSeries(DateTime.utc(2018, 9, 26), -50),
-    new CultivationDataSeries(DateTime.utc(2018, 9, 30), -40),
-    new CultivationDataSeries(DateTime.utc(2018, 10, 3), 51),
-    new CultivationDataSeries(DateTime.utc(2018, 10, 11), 1),
-    new CultivationDataSeries(DateTime.utc(2018, 10, 12), 4),
-    new CultivationDataSeries(DateTime.utc(2018, 10, 17), 3),
-    new CultivationDataSeries(DateTime.utc(2018, 10, 19), 12),
-    new CultivationDataSeries(DateTime.utc(2019, 1, 2), 15),
-    new CultivationDataSeries(DateTime.utc(2019, 1, 3), 16),
-    new CultivationDataSeries(DateTime.utc(2019, 1, 11), 12),
-    new CultivationDataSeries(DateTime.utc(2019, 1, 12), -10),
-    new CultivationDataSeries(DateTime.utc(2019, 1, 13), -22),
-    new CultivationDataSeries(DateTime.utc(2019, 1, 14), 21),
-    new CultivationDataSeries(DateTime.utc(2019, 1, 15), 20),
-    new CultivationDataSeries(DateTime.utc(2019, 1, 16), 22),
-  ];
+  // library private data
+  final List<CultivationDataSeries> _data;
 
+  // build the widget
   @override
   Widget build(BuildContext context) {
     
     return DefaultTabController(
         length: 4,
         child: Scaffold(
+          
           appBar: AppBar(
             title: Text("Chart Sample"),
             bottom: TabBar(tabs: [
@@ -80,35 +54,37 @@ class _InternalState extends State<SamplePage> {
               Tab(text: 'Annually')
             ]),
           ),
+
           body: TabBarView(
             children: [
               DailyTrendsWidget(_data),
               WeeklyTrendsWidget(_data),
               MonthlyTrendsWidget(_data),
-              AnuallyTrendsWidget(_data)
+              AnualTrendsWidget(_data)
             ]
           ),
         ));
   }
 }
 
+// widget to display daily trends
 class DailyTrendsWidget extends StatefulWidget {
 
-  final List<CultivationDataSeries> trends;
+  final List<CultivationDataSeries> data;
 
-  DailyTrendsWidget(this.trends);
+  DailyTrendsWidget(this.data);
 
   @override
-  DailyTrendsState createState() => DailyTrendsState(this.trends);
+  DailyTrendsState createState() => DailyTrendsState(this.data);
 }
 
 class WeeklyTrendsWidget extends StatefulWidget {
-  final List<CultivationDataSeries> trends;
+  final List<CultivationDataSeries> data;
 
-  WeeklyTrendsWidget(this.trends);
+  WeeklyTrendsWidget(this.data);
 
   @override
-  WeeklyTrendsState createState() => WeeklyTrendsState(this.trends);
+  WeeklyTrendsState createState() => WeeklyTrendsState(this.data);
 }
 
 class MonthlyTrendsWidget extends StatefulWidget {
@@ -120,36 +96,41 @@ class MonthlyTrendsWidget extends StatefulWidget {
   MonthlyTrendsState createState() => MonthlyTrendsState(trends);
 }
 
-class AnuallyTrendsWidget extends StatefulWidget {
+class AnualTrendsWidget extends StatefulWidget {
   final List<CultivationDataSeries> trends;
 
-  AnuallyTrendsWidget(this.trends);
+  AnualTrendsWidget(this.trends);
 
   @override
-  AnuallyTrendsState createState() => AnuallyTrendsState(trends);
+  AnualTrendsState createState() => AnualTrendsState(trends);
 }
 
-abstract class AbstractTrendsBehavior {
+abstract class AbstractTSChartState<T extends StatefulWidget> extends State<T> {
+
+  final List<CultivationDataSeries> data;
+  final String caption;
+
+  AbstractTSChartState(this.data, this.caption);
 
   categorize(List<CultivationDataSeries> data);
 
   getSeries(List<CultivationDataSeries> trends)  {
     return [
-      new charts.Series<CultivationDataSeries, DateTime>(
+       charts.Series<CultivationDataSeries, DateTime>(
         domainFn: (CultivationDataSeries d, _) => d.timestamp,
         measureFn: (CultivationDataSeries d, _) => d.tones,
         colorFn: (_, __) => charts.MaterialPalette.green.shadeDefault,
         id: 'Cultivations',
-        data: categorize(trends),
-      )..setAttribute(charts.rendererIdKey, 'customArea'),
+        data: categorize(trends))
+      ..setAttribute(charts.rendererIdKey, 'customArea'),
     ];
   }
 
-  createChartWidget(List<CultivationDataSeries> data) {
-    var chart = new charts.TimeSeriesChart(getSeries(data),
+  createChartWidget() {
+    var chart =  charts.TimeSeriesChart(getSeries(data),
       animate: true,
       customSeriesRenderers: [
-        new charts.LineRendererConfig(
+         charts.LineRendererConfig(
           // ID used to link series to this renderer.
           customRendererId: 'customArea',
           includeArea: true,
@@ -157,47 +138,44 @@ abstract class AbstractTrendsBehavior {
     ]);
 
     return Padding(
-      padding: new EdgeInsets.all(32.0),
-      child: new SizedBox(
+      padding:  EdgeInsets.all(32.0),
+      child:  SizedBox(
         height: 200.0,
         child: chart,
       ),
     );
   }
-}
 
-class DailyTrendsState extends
-  State<DailyTrendsWidget> with AbstractTrendsBehavior {
-
-  final List<CultivationDataSeries> trends;
-
-  DailyTrendsState(this.trends);
-
-  @override
-  categorize(List<CultivationDataSeries> data) {
-    return data;
-  }
-
-  @override
+   @override
   Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-          createChartWidget(this.trends),
+          createChartWidget(),
           Text('Daily Trends')
       ]));
   }
 }
 
+// construct daily trends from time series
+class DailyTrendsState extends
+  AbstractTSChartState<DailyTrendsWidget> {
+
+  DailyTrendsState(
+    List<CultivationDataSeries> data): super(data, "Daily Trends");
+
+  @override
+  categorize(List<CultivationDataSeries> data) {
+    return data;
+  }
+}
+
+// construct weekly trends from timeseries (throughout the year)
 class WeeklyTrendsState extends
-  State<WeeklyTrendsWidget> with AbstractTrendsBehavior {
+  AbstractTSChartState<WeeklyTrendsWidget> {
 
-  final List<CultivationDataSeries> trends;
-
-  WeeklyTrendsState(this.trends);
-
-  
+  WeeklyTrendsState(List<CultivationDataSeries> data): super(data = data, "Weekly Trends");
 
   @override
   categorize(List<CultivationDataSeries> data) {
@@ -245,58 +223,36 @@ class WeeklyTrendsState extends
     return acc;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-          createChartWidget(this.trends),
-          Text('Weekly Trends: 2018')
-      ]));
-  }
 }
 
+// monthly trends state
 class MonthlyTrendsState extends
-  State<MonthlyTrendsWidget> with AbstractTrendsBehavior {
+  AbstractTSChartState<MonthlyTrendsWidget> {
 
-  final List<CultivationDataSeries> trends;
-
-  MonthlyTrendsState(this.trends);
+  MonthlyTrendsState(List<CultivationDataSeries> data): super(data, "Monthly Trends");
 
   @override
   categorize(List<CultivationDataSeries> data) {
-    // aggregate data for the current year by months
+    // aggregate data by months for the year
     List<CultivationDataSeries> acc = List.generate(12, (int index) {
       print(index);
-      return CultivationDataSeries(DateTime(2018, index + 1, 1), 0);
+      return CultivationDataSeries(
+        DateTime(2018, DateTime.january + index, 1), 0);
     });
 
-    // iterate data and accumulate wherever possible
+    // iterate data and accumulate by similar month
     data.forEach((point) =>
-      acc[point.timestamp.month - 1].tones += point.tones);
+      acc[point.timestamp.month - 1] + point.tones);
 
     return acc;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-          createChartWidget(this.trends),
-          Text('Monthly Trends')
-      ]));
-  }
 }
 
-class AnuallyTrendsState extends
-  State<AnuallyTrendsWidget> with AbstractTrendsBehavior {
+class AnualTrendsState extends
+  AbstractTSChartState<AnualTrendsWidget> {
 
-  final List<CultivationDataSeries> trends;
-
-  AnuallyTrendsState(this.trends);
+  AnualTrendsState(List<CultivationDataSeries> data): super(data, "Anual Trends");
 
   @override
   categorize(List<CultivationDataSeries> data) {
@@ -313,16 +269,5 @@ class AnuallyTrendsState extends
     });
 
     return acc;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-          createChartWidget(this.trends),
-          Text('Annual Trends (2018 - 2019)')
-      ]));
   }
 }
