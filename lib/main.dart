@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_101/models/cultivation-data-entry.dart';
 import 'package:flutter_101/util/Fixtures.dart';
 import 'package:flutter_101/util/cultivation-dataset-utils.dart';
+import 'package:flutter_101/util/todo.dart';
 
 void main() => runApp(AppHomePage());
 
@@ -30,8 +31,8 @@ class StatisticsWidget extends StatefulWidget {
 }
 
 class _InternalState extends State<StatisticsWidget> {
-  /* todo: use appropiate lifecycle method to fetch data from
-    an external source*/
+  @Todo('kbngmoses',
+    'use appropiate lifecycle method to fetch data from an external source')
   _InternalState() : this._data = Fixtures.data;
 
   // library private data
